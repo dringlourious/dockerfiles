@@ -1,0 +1,78 @@
+FROM nvidia/cuda:10.2-cudnn7-devel-ubuntu18.04
+
+MAINTAINER Jiale Zhu <jiale.zhu@fau.de>
+
+### install ros-melodic-desktop ###
+
+
+# setup timezone
+RUN echo 'Etc/UTC' > /etc/timezone && \
+    ln -s /usr/share/zoneinfo/Etc/UTC /etc/localtime && \
+    apt-get update && apt-get install -q -y tzdata && rm -rf /var/lib/apt/lists/*
+
+# install packages
+RUN apt-get update && apt-get install -q -y \
+    dirmngr \
+    gnupg2 \
+    && rm -rf /var/lib/apt/lists/*
+
+# setup keys
+RUN apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys C1CF6E31E6BADE8868B172B4F42ED6FBAB17C654
+
+# setup sources.list
+RUN echo "deb http://packages.ros.org/ros/ubuntu bionic main" > /etc/apt/sources.list.d/ros1-latest.list
+
+# install bootstrap tools
+RUN apt-get update && apt-get install --no-install-recommends -y \
+    python-rosdep \
+    python-rosinstall \
+    python-vcstools \
+    && rm -rf /var/lib/apt/lists/*
+
+# setup environment
+ENV LANG C.UTF-8
+ENV LC_ALL C.UTF-8
+
+ENV ROS_DISTRO melodic
+# bootstrap rosdep
+RUN rosdep init && \
+    rosdep update --rosdistro $ROS_DISTRO
+
+# install ros packages
+RUN apt-get update && apt-get install -y \
+    ros-melodic-desktop=1.4.1-0* \
+    && rm -rf /var/lib/apt/lists/*
+
+# cmake
+RUN cd /opt/ \
+    && curl -L https://github.com/Kitware/CMake/releases/download/v3.17.1/cmake-3.17.1-Linux-x86_64.tar.gz  --output cmake.tar.gz \
+    && tar -xvzf cmake.tar.gz \
+    && rm cmake.tar.gz \
+    && rm -f /usr/bin/cmake \
+    && rm -f /usr/bin/ctest \
+    && update-alternatives --install /usr/bin/cmake cmake /opt/cmake-3.17.1-Linux-x86_64/bin/cmake 60 --slave /usr/bin/ctest ctest /opt/cmake-3.17.1-Linux-x86_64/bin/ctest
+
+
+
+RUN apt-get update \
+    && apt-get install -y software-properties-common \
+    && add-apt-repository ppa:ubuntu-toolchain-r/test -y\
+    && apt update \
+    && apt install g++-7 -y \
+    && update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-7 60 --slave /usr/bin/g++ g++ /usr/bin/g++-7 \
+    && update-alternatives --config gcc \
+    && apt install -y python-pip \
+    && pip install cpplint \
+    && apt install -y lcov \
+    && apt install -y cppcheck \
+    && apt install -y curl \
+    && apt install -y unzip \
+    && apt install -y doxygen \
+    && apt install -y graphviz \
+    && apt install -y clang-format
+
+RUN apt-get install ros-melodic-jsk-recognition-msgs -y
+
+CMD ["echo", "Successfully load the docker image"]
+
+
