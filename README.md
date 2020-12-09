@@ -4,5 +4,8 @@
 
 http://blog.shippable.com/build-a-docker-image-and-push-it-to-docker-hub
 
+
+# build docker image
+e.g. sudo docker build -t shawndeu/cuda10.2-cudnn8:ros_melodic .
 # push local docker image to repo
 e.g. sudo docker push shawndeu/ros_melodic_full:cuda10.2-cudnn7

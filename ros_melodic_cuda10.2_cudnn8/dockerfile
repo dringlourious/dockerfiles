@@ -1,13 +1,11 @@
-FROM nvidia/cuda:10.2-cudnn7-devel-ubuntu18.04
-
-MAINTAINER Jiale Zhu <jiale.zhu@fau.de>
-
-# install python3.7
-RUN apt install python3.7
-
-## install deep learning env
+FROM nvidia/cuda:10.2-cudnn8-devel-ubuntu18.04
 
 
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    libcudnn8=$CUDNN_VERSION-1+cuda10.2 \
+    libcudnn8-dev=$CUDNN_VERSION-1+cuda10.2 \
+    && apt-mark hold libcudnn8 && \
+    rm -rf /var/lib/apt/lists/*
 
 
 ### install ros-melodic-desktop ###
@@ -50,7 +48,9 @@ RUN apt-get update && apt-get install -y \
     ros-melodic-desktop=1.4.1-0* \
     && rm -rf /var/lib/apt/lists/*
 
-# cmake
+RUN apt-get install ros-melodic-jsk-recognition-msgs -y
+
+# install cmake
 RUN cd /opt/ \
     && curl -L https://github.com/Kitware/CMake/releases/download/v3.17.1/cmake-3.17.1-Linux-x86_64.tar.gz  --output cmake.tar.gz \
     && tar -xvzf cmake.tar.gz \
@@ -60,7 +60,7 @@ RUN cd /opt/ \
     && update-alternatives --install /usr/bin/cmake cmake /opt/cmake-3.17.1-Linux-x86_64/bin/cmake 60 --slave /usr/bin/ctest ctest /opt/cmake-3.17.1-Linux-x86_64/bin/ctest
 
 
-
+# install build essentials
 RUN apt-get update \
     && apt-get install -y software-properties-common \
     && add-apt-repository ppa:ubuntu-toolchain-r/test -y\
@@ -78,7 +78,20 @@ RUN apt-get update \
     && apt install -y graphviz \
     && apt install -y clang-format
 
-RUN apt-get install ros-melodic-jsk-recognition-msgs -y
+
+# install python3.7
+RUN apt install python3.7 -y
+RUN apt install python3-pip -y
+## install deep learning env
+RUN mkdir /dep
+ADD requirements.txt /dep
+ADD torch-1.7.0-cp37-cp37m-manylinux1_x86_64.whl /dep
+ADD spconv-1.2.1-cp37-cp37m-linux_x86_64_1804.whl /dep 
+
+WORKDIR /dep
+RUN python3.7 -m pip install -r requirements.txt
+RUN python3.7 -m pip install torch-1.7.0-cp37-cp37m-manylinux1_x86_64.whl
+RUN python3.7 -m pip install spconv-1.2.1-cp37-cp37m-linux_x86_64_1804.whl
 
 CMD ["echo", "Successfully load the docker image"]
 

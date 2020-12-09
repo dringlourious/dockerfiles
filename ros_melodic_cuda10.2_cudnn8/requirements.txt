@@ -1,0 +1,14 @@
+numpy
+# torch==1.7
+numba
+tensorboardX
+easydict
+pyyaml
+scikit-image
+tqdm
+matplotlib
+Pillow
+scikit-build
+cmake
+# opencv-python
+pycocotools
