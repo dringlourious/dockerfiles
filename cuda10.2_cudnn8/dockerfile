@@ -1,0 +1,72 @@
+FROM nvidia/cuda:10.2-cudnn8-devel-ubuntu18.04
+
+# update apt
+
+RUN apt-get update \
+    && apt-get install -y software-properties-common \
+    && add-apt-repository ppa:ubuntu-toolchain-r/test -y\ 
+    && apt-get update \
+    && apt-get upgrade -y\
+    && apt-get install libboost-all-dev -y\
+    && apt install g++-7 -y \
+    && update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-7 60 --slave /usr/bin/g++ g++ /usr/bin/g++-7 \
+    && update-alternatives --config gcc \
+    && apt-get install python3.7 -y\
+    && apt-get install libpython3.7-dev -y\
+    && apt-get install -y python3-pip \
+    && apt-get install -y python3.7-venv\
+    && apt-get install -y git\
+    && apt install -y lcov \
+    && apt install -y cppcheck \
+    && apt install -y curl \
+    && apt install -y unzip \
+    && apt install -y doxygen \
+    && apt install -y graphviz \
+    && apt install -y clang-format
+
+# cmake
+RUN cd /opt/ \
+    && curl -L https://github.com/Kitware/CMake/releases/download/v3.17.1/cmake-3.17.1-Linux-x86_64.tar.gz  --output cmake.tar.gz \
+    && tar -xvzf cmake.tar.gz \
+    && rm cmake.tar.gz \
+    && rm -f /usr/bin/cmake \
+    && rm -f /usr/bin/ctest \
+    && update-alternatives --install /usr/bin/cmake cmake /opt/cmake-3.17.1-Linux-x86_64/bin/cmake 60 --slave /usr/bin/ctest ctest /opt/cmake-3.17.1-Linux-x86_64/bin/ctest
+
+
+
+
+## install deep learning inside virtualenv
+RUN mkdir /dl_env
+
+ENV VIRTUAL_ENV=/dl_env
+RUN python3.7 -m venv $VIRTUAL_ENV
+ENV PATH="$VIRTUAL_ENV/bin:$PATH"
+
+# RUN mkdir /dep
+
+COPY torch-1.7.0-cp37-cp37m-manylinux1_x86_64.whl /tmp/ 
+COPY spconv-1.2.1-cp37-cp37m-linux_x86_64_1804.whl /tmp/ 
+COPY requirements.txt /tmp/
+
+COPY . /tmp/
+
+RUN . $VIRTUAL_ENV/bin/activate\
+    && python -m pip install --upgrade pip\
+    && pip install wheel\ 
+    && pip install -r /tmp/requirements.txt\
+    && pip install /tmp/torch-1.7.0-cp37-cp37m-manylinux1_x86_64.whl\
+    && git clone https://github.com/traveller59/spconv.git --recursive\
+    && cd spconv\
+    && python setup.py bdist_wheel\
+    && cd ./dist && ls\
+    && pip install spconv-1.2.1-cp37-cp37m-linux_x86_64.whl\
+    && cd ../..\    
+    && rm -r spconv
+
+# && pip install /tmp/spconv-1.2.1-cp37-cp37m-linux_x86_64_1804.whl
+
+# activate env by each run
+CMD . /dl_env/bin/activate
+
+

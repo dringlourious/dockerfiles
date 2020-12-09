@@ -9,6 +9,5 @@ tqdm
 matplotlib
 Pillow
 scikit-build
-cmake
-# opencv-python
-pycocotools
+opencv-python
+# pycocotools
