@@ -10,4 +10,9 @@ matplotlib
 Pillow
 scikit-build
 opencv-python
+# for pp
+protobuf
+pybind11
+shapely
+fire
 # pycocotools

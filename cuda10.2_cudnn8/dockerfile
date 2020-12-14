@@ -37,14 +37,12 @@ RUN cd /opt/ \
 
 
 ## install deep learning inside virtualenv
-RUN mkdir /dl_env
 
-ENV VIRTUAL_ENV=/dl_env
+ENV VIRTUAL_ENV=/opt/dl_venv
 RUN python3.7 -m venv $VIRTUAL_ENV
 ENV PATH="$VIRTUAL_ENV/bin:$PATH"
 
-# RUN mkdir /dep
-
+# install dl deps
 COPY torch-1.7.0-cp37-cp37m-manylinux1_x86_64.whl /tmp/ 
 COPY requirements.txt /tmp/
 # COPY . /tmp/
@@ -63,9 +61,10 @@ RUN . $VIRTUAL_ENV/bin/activate\
     && cd ../..\    
     && rm -r spconv
 
-# && pip install /tmp/spconv-1.2.1-cp37-cp37m-linux_x86_64_1804.whl
 
-# activate env by each run
-CMD . /dl_env/bin/activate
+
+# CMD . $VIRTUAL_ENV/bin/activate
+# ENTRYPOINT [". $VIRTUAL_ENV/bin/activate", "Guten Tag!"]  
+
 
 
