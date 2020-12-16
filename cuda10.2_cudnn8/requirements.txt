@@ -9,7 +9,8 @@ tqdm
 matplotlib
 Pillow
 scikit-build
-opencv-python
+#opencv-python
+opencv-python-headless
 # for pp
 protobuf
 pybind11
